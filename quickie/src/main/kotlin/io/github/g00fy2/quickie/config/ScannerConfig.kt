@@ -2,10 +2,20 @@ package io.github.g00fy2.quickie.config
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import io.github.g00fy2.quickie.content.QRContent
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Builder for ScannerConfig used in ScanBarcode ActivityResultContract.
  */
+
+public sealed class ScannerAction {
+  public object CloseScanner : ScannerAction()
+  public object ContinueScanning : ScannerAction()
+  public data class Error(val message: String) : ScannerAction()
+}
+
+
 @Suppress("LongParameterList")
 public class ScannerConfig internal constructor(
   internal val formats: IntArray,
@@ -72,6 +82,12 @@ public class ScannerConfig internal constructor(
     public fun setShowCloseButton(enable: Boolean): Builder = apply { showCloseButton = enable }
 
     /**
+     * Set a listener to be called when a barcode is detected.
+     */
+    public fun setScannerSuccessActionProvider(listener: suspend CoroutineScope.(QRContent) -> ScannerAction): Builder =
+      apply { scannerSuccessActionProvider = listener }
+
+    /**
      * Build the BarcodeConfig required by the ScanBarcode ActivityResultContract.
      */
     public fun build(): ScannerConfig =
@@ -92,5 +108,7 @@ public class ScannerConfig internal constructor(
      * Kotlin friendly method to build the BarcodeConfig required by the ScanBarcode ActivityResultContract.
      */
     public fun build(func: Builder.() -> Unit): ScannerConfig = Builder().apply { func() }.build()
+
+    internal var scannerSuccessActionProvider: (suspend CoroutineScope.(QRContent) -> ScannerAction)? = null
   }
 }

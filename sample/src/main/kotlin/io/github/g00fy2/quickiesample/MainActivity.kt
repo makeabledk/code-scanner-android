@@ -16,9 +16,11 @@ import io.github.g00fy2.quickie.QRResult.QRUserCanceled
 import io.github.g00fy2.quickie.ScanCustomCode
 import io.github.g00fy2.quickie.ScanQRCode
 import io.github.g00fy2.quickie.config.BarcodeFormat
+import io.github.g00fy2.quickie.config.ScannerAction
 import io.github.g00fy2.quickie.config.ScannerConfig
 import io.github.g00fy2.quickie.content.QRContent
 import io.github.g00fy2.quickiesample.databinding.ActivityMainBinding
+import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,16 +41,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     binding.customScannerButton.setOnClickListener {
+      var count = 0
       scanCustomCode.launch(
         ScannerConfig.build {
-          setBarcodeFormats(listOf(selectedBarcodeFormat)) // set interested barcode formats
-          setOverlayStringRes(R.string.scan_barcode) // string resource used for the scanner overlay
-          setOverlayDrawableRes(R.drawable.ic_scan_barcode) // drawable resource used for the scanner overlay
-          setHapticSuccessFeedback(false) // enable (default) or disable haptic feedback when a barcode was detected
-          setShowTorchToggle(true) // show or hide (default) torch/flashlight toggle button
-          setShowCloseButton(true) // show or hide (default) close button
-          setHorizontalFrameRatio(2.2f) // set the horizontal overlay ratio (default is 1 / square frame)
-          setUseFrontCamera(false) // use the front camera
+          setBarcodeFormats(listOf(BarcodeFormat.FORMAT_QR_CODE))
+          setScannerSuccessActionProvider {
+            delay(1000)
+            if (it.rawValue.length != 6) {
+              count = 0
+              ScannerAction.Error("Invalid code")
+            } else if (count++ == 2)
+              ScannerAction.CloseScanner
+            else
+              ScannerAction.ContinueScanning
+          }
         }
       )
     }

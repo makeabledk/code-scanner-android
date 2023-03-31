@@ -42,6 +42,7 @@ dependencies {
 
   testImplementation(libs.test.junitApi)
   testRuntimeOnly(libs.test.junitEngine)
+  implementation("androidx.activity:activity-ktx:1.6.1")
 }
 
 group = "io.github.g00fy2.quickie"

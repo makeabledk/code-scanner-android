@@ -11,6 +11,7 @@ import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.camera.core.CameraSelector
@@ -22,11 +23,17 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.barcode.common.Barcode
 import io.github.g00fy2.quickie.config.ParcelableScannerConfig
+import io.github.g00fy2.quickie.config.ScannerAction
+import io.github.g00fy2.quickie.config.ScannerConfig
+import io.github.g00fy2.quickie.content.QRContent
 import io.github.g00fy2.quickie.databinding.QuickieScannerActivityBinding
 import io.github.g00fy2.quickie.extensions.toParcelableContentType
 import io.github.g00fy2.quickie.utils.MlKitErrorHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -39,20 +46,8 @@ internal class QRScannerActivity : AppCompatActivity() {
   private var showTorchToggle = false
   private var showCloseButton = false
   private var useFrontCamera = false
-  internal var errorDialog: Dialog? = null
-    set(value) {
-      field = value
-      value?.show()
-      value?.setOnKeyListener { dialog, keyCode, _ ->
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-          finish()
-          dialog.dismiss()
-          true
-        } else {
-          false
-        }
-      }
-    }
+  private var scannerSuccessActionProvider: (suspend CoroutineScope.(QRContent) -> ScannerAction)? = null
+  private var analysisPaused = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -108,8 +103,11 @@ internal class QRScannerActivity : AppCompatActivity() {
             QRCodeAnalyzer(
               barcodeFormats = barcodeFormats,
               onSuccess = { barcode ->
-                it.clearAnalyzer()
-                onSuccess(barcode)
+//                it.clearAnalyzer()
+                if (!analysisPaused) {
+                  analysisPaused = true
+                  onSuccess(barcode)
+                }
               },
               onFailure = { exception -> onFailure(exception) },
               onPassCompleted = { failureOccurred -> onPassCompleted(failureOccurred) }
@@ -148,15 +146,47 @@ internal class QRScannerActivity : AppCompatActivity() {
         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING or HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
       )
     }
-    setResult(
-      Activity.RESULT_OK,
-      Intent().apply {
-        putExtra(EXTRA_RESULT_VALUE, result.rawValue)
-        putExtra(EXTRA_RESULT_TYPE, result.valueType)
-        putExtra(EXTRA_RESULT_PARCELABLE, result.toParcelableContentType())
+
+    fun setResultAndFinish() {
+      setResult(
+        Activity.RESULT_OK,
+        Intent().apply {
+          putExtra(EXTRA_RESULT_VALUE, result.rawValue)
+          putExtra(EXTRA_RESULT_TYPE, result.valueType)
+          putExtra(EXTRA_RESULT_PARCELABLE, result.toParcelableContentType())
+        }
+      )
+      finish()
+    }
+
+    if (scannerSuccessActionProvider != null) {
+      lifecycleScope.launch {
+        val scanCompletedResult = scannerSuccessActionProvider!!.invoke(this, QRContent.Plain(result.rawValue.orEmpty()))
+        when (scanCompletedResult) {
+          ScannerAction.CloseScanner -> setResultAndFinish()
+          ScannerAction.ContinueScanning -> {
+            binding.overlayView.isHighlighted = false
+            analysisPaused = false
+          }
+          is ScannerAction.Error -> {
+            binding.overlayView.isHighlighted = false
+            val dialog = AlertDialog.Builder(this@QRScannerActivity)
+              .setTitle("An error occurred")
+              .setMessage(scanCompletedResult.message)
+              .setPositiveButton("Ok") { _, _ ->
+                analysisPaused = false
+              }
+              .create()
+            dialog.setOnDismissListener {
+              analysisPaused = false
+            }
+            dialog.show()
+          }
+        }
       }
-    )
-    finish()
+    } else {
+      setResultAndFinish()
+    }
   }
 
   private fun onFailure(exception: Exception) {
@@ -187,6 +217,7 @@ internal class QRScannerActivity : AppCompatActivity() {
       showTorchToggle = it.showTorchToggle
       useFrontCamera = it.useFrontCamera
       showCloseButton = it.showCloseButton
+      scannerSuccessActionProvider = ScannerConfig.scannerSuccessActionProvider
     }
   }
 

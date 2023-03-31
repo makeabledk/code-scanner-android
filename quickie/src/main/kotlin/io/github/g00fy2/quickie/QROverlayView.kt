@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PorterDuff
 import android.graphics.PorterDuff.Mode.CLEAR
 import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
@@ -79,6 +80,7 @@ internal class QROverlayView @JvmOverloads constructor(
 
   @Suppress("UnsafeCallOnNullableType")
   override fun onDraw(canvas: Canvas) {
+    maskCanvas!!.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
     strokePaint.color = if (isHighlighted) accentColor else grayColor
     maskCanvas!!.drawColor(backgroundColor)
     maskCanvas!!.drawRoundRect(outerFrame, outerRadius, outerRadius, strokePaint)
