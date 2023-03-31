@@ -2,13 +2,11 @@ package io.github.g00fy2.quickie
 
 import android.Manifest.permission.CAMERA
 import android.app.Activity
-import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Size
 import android.view.HapticFeedbackConstants
-import android.view.KeyEvent
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -28,11 +26,11 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import io.github.g00fy2.quickie.config.ParcelableScannerConfig
 import io.github.g00fy2.quickie.config.ScannerAction
 import io.github.g00fy2.quickie.config.ScannerConfig
+import io.github.g00fy2.quickie.config.ScannerSuccessActionProvider
 import io.github.g00fy2.quickie.content.QRContent
 import io.github.g00fy2.quickie.databinding.QuickieScannerActivityBinding
 import io.github.g00fy2.quickie.extensions.toParcelableContentType
 import io.github.g00fy2.quickie.utils.MlKitErrorHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -46,7 +44,7 @@ internal class QRScannerActivity : AppCompatActivity() {
   private var showTorchToggle = false
   private var showCloseButton = false
   private var useFrontCamera = false
-  private var scannerSuccessActionProvider: (suspend CoroutineScope.(QRContent) -> ScannerAction)? = null
+  private var scannerSuccessActionProvider: ScannerSuccessActionProvider? = null
   private var analysisPaused = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +101,6 @@ internal class QRScannerActivity : AppCompatActivity() {
             QRCodeAnalyzer(
               barcodeFormats = barcodeFormats,
               onSuccess = { barcode ->
-//                it.clearAnalyzer()
                 if (!analysisPaused) {
                   analysisPaused = true
                   onSuccess(barcode)
@@ -217,8 +214,9 @@ internal class QRScannerActivity : AppCompatActivity() {
       showTorchToggle = it.showTorchToggle
       useFrontCamera = it.useFrontCamera
       showCloseButton = it.showCloseButton
-      scannerSuccessActionProvider = ScannerConfig.scannerSuccessActionProvider
     }
+
+    scannerSuccessActionProvider = ScannerConfig.scannerSuccessActionProvider
   }
 
   private fun requestCameraPermissionIfMissing(onResult: ((Boolean) -> Unit)) {

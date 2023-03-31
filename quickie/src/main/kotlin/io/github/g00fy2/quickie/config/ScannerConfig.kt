@@ -84,7 +84,7 @@ public class ScannerConfig internal constructor(
     /**
      * Set a listener to be called when a barcode is detected.
      */
-    public fun setScannerSuccessActionProvider(listener: suspend CoroutineScope.(QRContent) -> ScannerAction): Builder =
+    public fun setScannerSuccessActionProvider(listener: ScannerSuccessActionProvider): Builder =
       apply { scannerSuccessActionProvider = listener }
 
     /**
@@ -109,6 +109,8 @@ public class ScannerConfig internal constructor(
      */
     public fun build(func: Builder.() -> Unit): ScannerConfig = Builder().apply { func() }.build()
 
-    internal var scannerSuccessActionProvider: (suspend CoroutineScope.(QRContent) -> ScannerAction)? = null
+    internal var scannerSuccessActionProvider: ScannerSuccessActionProvider? = null
   }
 }
+
+public typealias ScannerSuccessActionProvider = suspend CoroutineScope.(QRContent) -> ScannerAction

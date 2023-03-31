@@ -11,13 +11,17 @@ import io.github.g00fy2.quickie.QRResult.QRSuccess
 import io.github.g00fy2.quickie.QRResult.QRUserCanceled
 import io.github.g00fy2.quickie.QRScannerActivity.Companion.RESULT_ERROR
 import io.github.g00fy2.quickie.QRScannerActivity.Companion.RESULT_MISSING_PERMISSION
+import io.github.g00fy2.quickie.config.ScannerConfig
+import io.github.g00fy2.quickie.config.ScannerSuccessActionProvider
 import io.github.g00fy2.quickie.extensions.getRootException
 import io.github.g00fy2.quickie.extensions.toQuickieContentType
 
-public class ScanQRCode : ActivityResultContract<Nothing?, QRResult>() {
+public class ScanQRCode : ActivityResultContract<ScannerSuccessActionProvider?, QRResult>() {
 
-  override fun createIntent(context: Context, input: Nothing?): Intent =
-    Intent(context, QRScannerActivity::class.java)
+  override fun createIntent(context: Context, input: ScannerSuccessActionProvider?): Intent {
+    ScannerConfig.scannerSuccessActionProvider = input
+    return Intent(context, QRScannerActivity::class.java)
+  }
 
   override fun parseResult(resultCode: Int, intent: Intent?): QRResult {
     return when (resultCode) {
