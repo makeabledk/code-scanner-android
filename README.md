@@ -1,8 +1,12 @@
 <p align="center">
   <img width="345" height="120" src="https://raw.githubusercontent.com/G00fY2/quickie/gh-pages/media/logo.png">
 </p>
+This repository is forked from https://github.com/G00fY2/quickie. This readme has been altered to reflect Makeables fork of the library.
+
+
 
 **quickie** is a Quick Response (QR) Code scanning library for Android that is based on CameraX and ML Kit on-device barcode detection. It's an alternative to ZXing based libraries and written in Kotlin. **quickie** features:
+
 - Easy API for launching the QR scanner and receiving results by using the new Activity Result API
 - Modern design, edge-to-edge scanning view with multilingual user hint
 - Android Jetpack CameraX for communicating with the camera and showing the preview
@@ -10,21 +14,9 @@
 
 > **Note**: At Google I/O 2022 the [Google code scanner](https://developers.google.com/ml-kit/code-scanner) was announced. You should consider using it instead of quickie unbundled. If you want to support devices without Play Services or like to ship the latest ML Kit model - use quickie bundled.
 
-## Download [![Maven Central](https://img.shields.io/maven-central/v/io.github.g00fy2.quickie/quickie-unbundled)](https://search.maven.org/search?q=g:io.github.g00fy2.quickie)
-There are two different flavors available on `mavenCentral()`:
-
-| Bundled                                                                             | Unbundled                                                                                                |
-|-------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| ML Kit model is bundled inside app (independent of Google Services)                 | ML Kit model will be automatically downloaded via Play Services (once while installing/updating the app) |
-| About 2.5 MB app size increase per ABI (you should use App Bundle or ABI splitting) | About 550 KB app size increase                                                                           |
-| V3 model is used (faster, more accurate)                                            | Currently V1 model will be downloaded                                                                    |
-
+## Download [![](https://jitpack.io/v/makeabledk/code-scanner-android.svg)](https://jitpack.io/#makeabledk/code-scanner-android)
 ```kotlin
-// bundled:  
-implementation("io.github.g00fy2.quickie:quickie-bundled:1.6.0")
-
-// unbundled:
-implementation("io.github.g00fy2.quickie:quickie-unbundled:1.6.0")
+implementation 'com.github.makeabledk:code-scanner-android:1.7.0'
 ```
 
 ## Quick Start
@@ -146,18 +138,18 @@ Thanks to everyone who contributed to quickie!
 
 ## License
     The MIT License (MIT)
-
+    
     Copyright (C) 2022 Thomas Wirth
-
+    
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
     associated documentation files (the "Software"), to deal in the Software without restriction,
     including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
     and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
     subject to the following conditions:
-
+    
     The above copyright notice and this permission notice shall be included in all copies or substantial
     portions of the Software.
-
+    
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
     LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
