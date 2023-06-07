@@ -5,6 +5,8 @@ This repository is forked from https://github.com/G00fY2/quickie. This readme ha
 
 
 
+
+
 **quickie** is a Quick Response (QR) Code scanning library for Android that is based on CameraX and ML Kit on-device barcode detection. It's an alternative to ZXing based libraries and written in Kotlin. **quickie** features:
 
 - Easy API for launching the QR scanner and receiving results by using the new Activity Result API
@@ -111,6 +113,14 @@ override fun onCreate(savedInstanceState: Bundle?) {
           setShowCloseButton(true) // show or hide (default) close button
           setHorizontalFrameRatio(2.2f) // set the horizontal overlay ratio (default is 1 / square frame)
           setUseFrontCamera(true) // use the front camera
+          setScannerSuccessActionProvider {
+            if (it.rawValue.length != 6) {
+              ScannerAction.Error("Invalid code")
+            } else if (it.rawValue == "123456")
+              ScannerAction.CloseScanner
+            else
+              ScannerAction.ContinueScanning
+          }
         }
       )
     }
@@ -120,6 +130,24 @@ fun handleResult(result: QRResult) {
     …
 ```
 > **Note**: You can optionally [pass in an ActivityOptionsCompat object](https://developer.android.com/reference/androidx/activity/result/ActivityResultLauncher#launch(I,%20androidx.core.app.ActivityOptionsCompat)) when launching the ActivityResultLauncher to control the scanner launch animation.
+
+### Scanning multiple codes
+
+You can decide what happens when a code is scanned by setting a `ScannerSuccessActionProvider` on the `ScannerConfig` like shown above. This can be useful if you want to disable certain codes that cannot be disabled using the `setBarcodeFormat` function or if you need to scan more than one code without closing the scanner between scanning each code.
+
+You can return a `ScannerAction` which can be one of 3 values:
+
+```kotlin
+ScannerAction.Error("Message to the user")
+ScannerAction.ContinueScanning
+ScannerAction.CloseScanner
+```
+
+
+
+For example usage you can see implementation in sample here:
+
+https://github.com/makeabledk/code-scanner-android/blob/eb9319a38ba10d9558224ea693acedd236b79a2e/sample/src/main/kotlin/io/github/g00fy2/quickiesample/MainActivity.kt#L67
 
 ## Screenshots / Sample App
 You can find the sample app APKs inside the [release](https://github.com/G00fY2/quickie/releases) assets.
