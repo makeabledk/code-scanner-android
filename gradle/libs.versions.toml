@@ -1,44 +1,45 @@
 [versions]
-quickie = "1.6.0"
+quickie = "1.11.0"
 
 androidconfig-minSdk = "21"
-androidconfig-compileSdk = "33"
-androidconfig-targetSdk = "33"
-androidconfig-buildTools = "33.0.1"
+androidconfig-compileSdk = "35"
+androidconfig-targetSdk = "35"
+androidconfig-buildTools = "36.0.0"
 
-androidGradle = "7.3.1"
-kotlin = "1.7.21"
+androidGradle = "8.10.0"
+kotlin = "2.1.21"
 
-appcompat = "1.5.1"
+appcompat = "1.7.0"
+core = "1.16.0"
 
-cameraX = "1.2.0"
+cameraX = "1.4.2"
 
-barcodeScanning = "17.0.3"
-barcodeScanningGms = "18.1.0"
+barcodeScanning = "17.3.0"
+barcodeScanningGms = "18.3.1"
 
-materialDesign = "1.7.0"
+materialDesign = "1.12.0"
 
-detekt = "1.22.0"
-gradleVersions = "0.44.0"
-dokka = "1.7.20"
+detekt = "1.23.8"
+dokka = "2.0.0"
 
-junit = "5.9.1"
+junit = "5.12.2"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-camera = { module = "androidx.camera:camera-camera2", version.ref = "cameraX" }
 androidx-cameraLifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraX" }
 androidx-cameraPreview = { module = "androidx.camera:camera-view", version.ref = "cameraX" }
+androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
 
 mlkit-barcodeScanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
 mlkit-barcodeScanningGms = { module = "com.google.android.gms:play-services-mlkit-barcode-scanning", version.ref = "barcodeScanningGms" }
 
 google-materialDesign = { module = "com.google.android.material:material", version.ref = "materialDesign" }
 
-test-junitApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
-test-junitEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+test-junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+test-junit-platformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 
-misc-detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradle" }
@@ -48,5 +49,4 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 
-misc-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-misc-gradleVersions = { id = "com.github.ben-manes.versions", version.ref = "gradleVersions" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

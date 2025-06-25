@@ -2,11 +2,11 @@ package io.github.g00fy2.quickiesample
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.google.android.material.snackbar.Snackbar
 import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.QRResult.QRError
@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
           setShowCloseButton(true) // show or hide (default) close button
           setHorizontalFrameRatio(2.2f) // set the horizontal overlay ratio (default is 1 / square frame)
           setUseFrontCamera(false) // use the front camera
+          setKeepScreenOn(true) // keep the device's screen turned on
           setScannerSuccessActionProvider {
             delay(1000)
             if (it.rawValue.length != 6) {
@@ -83,7 +84,11 @@ class MainActivity : AppCompatActivity() {
 
   private fun showSnackbar(result: QRResult) {
     val text = when (result) {
-      is QRSuccess -> result.content.rawValue
+      is QRSuccess -> {
+        result.content.rawValue
+        // decoding with default UTF-8 charset when rawValue is null will not result in meaningful output, demo purpose
+          ?: result.content.rawBytes?.let { String(it) }.orEmpty()
+      }
       QRUserCanceled -> "User canceled"
       QRMissingPermission -> "Missing permission"
       is QRError -> "${result.exception.javaClass.simpleName}: ${result.exception.localizedMessage}"
@@ -94,29 +99,32 @@ class MainActivity : AppCompatActivity() {
         maxLines = 5
         setTextIsSelectable(true)
       }
-      if (result is QRSuccess && result.content is QRContent.Url) {
-        setAction(R.string.open_action) { openUrl(result.content.rawValue) }
-      } else {
-        setAction(R.string.ok_action) { }
+      if (result is QRSuccess) {
+        val content = result.content
+        if (content is QRContent.Url) {
+          setAction(R.string.open_action) { openUrl(content.url) }
+          return@apply
+        }
       }
+      setAction(R.string.ok_action) { }
     }.show()
   }
 
   private fun openUrl(url: String) {
     try {
-      startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+      startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     } catch (ignored: ActivityNotFoundException) {
       // no Activity found to run the given Intent
     }
   }
 
   private fun setBarcodeFormatDropdown() {
-    ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, BarcodeFormat.values().map { it.name }).let {
+    ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, BarcodeFormat.entries.map { it.name }).let {
       binding.barcodeFormatsAutoCompleteTextView.setAdapter(it)
       binding.barcodeFormatsAutoCompleteTextView.setText(it.getItem(it.getPosition(selectedBarcodeFormat.name)), false)
     }
     binding.barcodeFormatsAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
-      selectedBarcodeFormat = BarcodeFormat.values()[position]
+      selectedBarcodeFormat = BarcodeFormat.entries[position]
     }
   }
 

@@ -1,6 +1,5 @@
-<p align="center">
-  <img width="345" height="120" src="https://raw.githubusercontent.com/G00fY2/quickie/gh-pages/media/logo.png">
-</p>
+![quickie logo](https://raw.githubusercontent.com/G00fY2/quickie/gh-pages/media/logo_dark.svg#gh-dark-mode-only)
+![quickie logo](https://raw.githubusercontent.com/G00fY2/quickie/gh-pages/media/logo_light.svg#gh-light-mode-only)
 This repository is forked from https://github.com/G00fY2/quickie. This readme has been altered to reflect Makeables fork of the library.
 
 
@@ -14,11 +13,14 @@ This repository is forked from https://github.com/G00fY2/quickie. This readme ha
 - Android Jetpack CameraX for communicating with the camera and showing the preview
 - ML Kit Vision API for best, fully on-device barcode recognition and decoding
 
-> **Note**: At Google I/O 2022 the [Google code scanner](https://developers.google.com/ml-kit/code-scanner) was announced. You should consider using it instead of quickie unbundled. If you want to support devices without Play Services or like to ship the latest ML Kit model - use quickie bundled.
-
 ## Download [![](https://jitpack.io/v/makeabledk/code-scanner-android.svg)](https://jitpack.io/#makeabledk/code-scanner-android)
 ```kotlin
 implementation 'com.github.makeabledk:code-scanner-android:1.7.0'
+// bundled:  
+implementation("io.github.g00fy2.quickie:quickie-bundled:1.11.0")
+
+// unbundled:
+implementation("io.github.g00fy2.quickie:quickie-unbundled:1.11.0")
 ```
 
 ## Quick Start
@@ -59,13 +61,13 @@ The activity result is a subclass of the sealed `QRResult` class:
 
 1. `QRSuccess` when ML Kit successfully detected a QR code
    * wraps a `QRContent` object
-1. `QRUserCanceled` when the Activity got canceled by the user
-1. `QRMissingPermission` when the user didn't accept the camera permission
-1. `QRError` when CameraX or ML Kit threw an exception
+2. `QRUserCanceled` when the Activity got canceled by the user
+3. `QRMissingPermission` when the user didn't accept the camera permission
+4. `QRError` when CameraX or ML Kit threw an exception
    * wraps the `exception`
 
 #### Content
-The content type of the QR code detected by ML Kit is wrapped inside a subclass of the sealed `QRContent` class which always provides a `rawValue`.
+The content type of the QR code detected by ML Kit is wrapped inside a subclass of the sealed `QRContent` class which always provides a `rawBytes` and `rawValue` (will only be `null` for non-UTF8 barcodes).
 
 Currently, supported subtypes are:
 `Plain`, `Wifi`, `Url`, `Sms`, `GeoPoint`, `Email`, `Phone`, `ContactInfo`, `CalendarEvent`
@@ -113,6 +115,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
           setShowCloseButton(true) // show or hide (default) close button
           setHorizontalFrameRatio(2.2f) // set the horizontal overlay ratio (default is 1 / square frame)
           setUseFrontCamera(true) // use the front camera
+          setKeepScreenOn(true) // keep the device's screen turned on
           setScannerSuccessActionProvider {
             if (it.rawValue.length != 6) {
               ScannerAction.Error("Invalid code")
@@ -129,7 +132,8 @@ override fun onCreate(savedInstanceState: Bundle?) {
 fun handleResult(result: QRResult) {
     …
 ```
-> **Note**: You can optionally [pass in an ActivityOptionsCompat object](https://developer.android.com/reference/androidx/activity/result/ActivityResultLauncher#launch(I,%20androidx.core.app.ActivityOptionsCompat)) when launching the ActivityResultLauncher to control the scanner launch animation.
+> [!TIP]
+> You can optionally [pass in an ActivityOptionsCompat object](https://developer.android.com/reference/androidx/activity/result/ActivityResultLauncher#launch(I,%20androidx.core.app.ActivityOptionsCompat)) when launching the ActivityResultLauncher to control the scanner launch animation.
 
 ### Scanning multiple codes
 
@@ -159,8 +163,11 @@ You can find the sample app APKs inside the [release](https://github.com/G00fY2/
 * Min SDK 21+ (required by CameraX)
 * (Google Play Services available on the end device if using `quickie-unbundled`)
 
+## Terms & Privacy
+See [ML Kit Terms & Privacy](https://developers.google.com/ml-kit/terms)
+
 ## Contributing
-See [CONTRIBUTING](CONTRIBUTING.md)
+See [CONTRIBUTING](.github/CONTRIBUTING.md)
 
 Thanks to everyone who contributed to quickie!
 

@@ -20,6 +20,7 @@ import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.DrawableCompat
 import io.github.g00fy2.quickie.databinding.QuickieOverlayViewBinding
 import kotlin.math.min
@@ -73,7 +74,7 @@ internal class QROverlayView @JvmOverloads constructor(
     super.onLayout(changed, left, top, right, bottom)
 
     if (maskBitmap == null && width > 0 && height > 0) {
-      maskBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply { maskCanvas = Canvas(this) }
+      maskBitmap = createBitmap(width, height).apply { maskCanvas = Canvas(this) }
       calculateFrameAndTitlePos()
     }
   }

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Size
 import android.view.HapticFeedbackConstants
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -16,8 +17,11 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -91,9 +95,16 @@ internal class QRScannerActivity : AppCompatActivity() {
         return@addListener
       }
 
-      val preview = Preview.Builder().build().also { it.setSurfaceProvider(binding.previewView.surfaceProvider) }
+      val preview = Preview.Builder().build().also { it.surfaceProvider = binding.previewView.surfaceProvider }
       val imageAnalysis = ImageAnalysis.Builder()
-        .setTargetResolution(Size(1280, 720))
+        .setResolutionSelector(
+          ResolutionSelector.Builder().setResolutionStrategy(
+            ResolutionStrategy(
+              Size(1280, 720),
+              ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+            )
+          ).build()
+        )
         .build()
         .also {
           it.setAnalyzer(
@@ -138,17 +149,15 @@ internal class QRScannerActivity : AppCompatActivity() {
     binding.overlayView.isHighlighted = true
     if (hapticFeedback) {
       @Suppress("DEPRECATION")
-      binding.overlayView.performHapticFeedback(
-        HapticFeedbackConstants.KEYBOARD_TAP,
-        HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING or HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
-      )
+      val flags = HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING or HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+      binding.overlayView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, flags)
     }
 
     fun setResultAndFinish() {
       setResult(
         Activity.RESULT_OK,
         Intent().apply {
-          putExtra(EXTRA_RESULT_VALUE, result.rawValue)
+          putExtra(EXTRA_RESULT_BYTES, result.rawBytes)putExtra(EXTRA_RESULT_VALUE, result.rawValue)
           putExtra(EXTRA_RESULT_TYPE, result.valueType)
           putExtra(EXTRA_RESULT_PARCELABLE, result.toParcelableContentType())
         }
@@ -204,8 +213,7 @@ internal class QRScannerActivity : AppCompatActivity() {
   }
 
   private fun applyScannerConfig() {
-    @Suppress("DEPRECATION")
-    intent?.getParcelableExtra<ParcelableScannerConfig>(EXTRA_CONFIG)?.let {
+    intent?.let { IntentCompat.getParcelableExtra(it, EXTRA_CONFIG, ParcelableScannerConfig::class.java) }?.let {
       barcodeFormats = it.formats
       binding.overlayView.setCustomText(it.stringRes)
       binding.overlayView.setCustomIcon(it.drawableRes)
@@ -214,6 +222,8 @@ internal class QRScannerActivity : AppCompatActivity() {
       showTorchToggle = it.showTorchToggle
       useFrontCamera = it.useFrontCamera
       showCloseButton = it.showCloseButton
+
+      if (it.keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     scannerSuccessActionProvider = ScannerConfig.scannerSuccessActionProvider
@@ -229,6 +239,7 @@ internal class QRScannerActivity : AppCompatActivity() {
 
   companion object {
     const val EXTRA_CONFIG = "quickie-config"
+    const val EXTRA_RESULT_BYTES = "quickie-bytes"
     const val EXTRA_RESULT_VALUE = "quickie-value"
     const val EXTRA_RESULT_TYPE = "quickie-type"
     const val EXTRA_RESULT_PARCELABLE = "quickie-parcelable"
