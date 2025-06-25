@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
       var count = 0
       scanQrCode.launch() {
         delay(1000)
-        if (it.rawValue.length != 6) {
+        if (it.rawValue?.length != 6) {
           count = 0
           ScannerAction.Error("Invalid code")
         } else if (count++ == 2) {
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
           setKeepScreenOn(true) // keep the device's screen turned on
           setScannerSuccessActionProvider {
             delay(1000)
-            if (it.rawValue.length != 6) {
+            if (it.rawValue?.length != 6) {
               count = 0
               ScannerAction.Error("Invalid code")
             } else if (count++ == 2)

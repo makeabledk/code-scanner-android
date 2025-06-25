@@ -2,11 +2,13 @@ package io.github.g00fy2.quickie
 
 import android.Manifest.permission.CAMERA
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Size
 import android.view.HapticFeedbackConstants
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,6 +52,20 @@ internal class QRScannerActivity : AppCompatActivity() {
   private var useFrontCamera = false
   private var scannerSuccessActionProvider: ScannerSuccessActionProvider? = null
   private var analysisPaused = false
+  internal var errorDialog: Dialog? = null
+    set(value) {
+      field = value
+      value?.show()
+      value?.setOnKeyListener { dialog, keyCode, _ ->
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+          finish()
+          dialog.dismiss()
+          true
+        } else {
+          false
+        }
+      }
+    }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -157,7 +173,7 @@ internal class QRScannerActivity : AppCompatActivity() {
       setResult(
         Activity.RESULT_OK,
         Intent().apply {
-          putExtra(EXTRA_RESULT_BYTES, result.rawBytes)putExtra(EXTRA_RESULT_VALUE, result.rawValue)
+          putExtra(EXTRA_RESULT_BYTES, result.rawBytes).putExtra(EXTRA_RESULT_VALUE, result.rawValue)
           putExtra(EXTRA_RESULT_TYPE, result.valueType)
           putExtra(EXTRA_RESULT_PARCELABLE, result.toParcelableContentType())
         }
@@ -167,7 +183,7 @@ internal class QRScannerActivity : AppCompatActivity() {
 
     if (scannerSuccessActionProvider != null) {
       lifecycleScope.launch {
-        val scanCompletedResult = scannerSuccessActionProvider!!.invoke(this, QRContent.Plain(result.rawValue.orEmpty()))
+        val scanCompletedResult = scannerSuccessActionProvider!!.invoke(this, QRContent.Plain(result.rawBytes, result.rawValue))
         when (scanCompletedResult) {
           ScannerAction.CloseScanner -> setResultAndFinish()
           ScannerAction.ContinueScanning -> {
